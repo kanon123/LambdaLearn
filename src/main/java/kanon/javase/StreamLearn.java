@@ -171,6 +171,7 @@ public class StreamLearn {
 
 
 
+
 //        List<String> result = longwords.collect(Collectors.toList());
 //        System.out.println(result);
     }
