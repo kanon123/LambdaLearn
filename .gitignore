@@ -1,0 +1,11 @@
+#
+*.iml
+*/target/
+*.class
+.idea
+out/*
+*/target
+target
+*/logs/
+# base.properties
+.DS_Store
