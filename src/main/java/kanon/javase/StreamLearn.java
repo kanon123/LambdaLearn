@@ -6,7 +6,10 @@ import com.sun.org.apache.xpath.internal.operations.Bool;
 import java.nio.channels.Pipe;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -131,45 +134,258 @@ public class StreamLearn {
         }
 
         System.out.println("----------------------------------------");
-        Stream<String> firstQ = Stream.of("abc","d","Query","f");
-        Optional<String> resultWord = firstQ.filter(str->str.startsWith("Q")).findFirst();
-        if(resultWord.isPresent()){
+        Stream<String> firstQ = Stream.of("abc", "d", "Query", "f");
+        Optional<String> resultWord = firstQ.filter(str -> str.startsWith("Q")).findFirst();
+        if (resultWord.isPresent()) {
             System.out.println(resultWord.get());
         }
 
         System.out.println("----------------------------------------");
-        Stream<String> firstQFindAny = Stream.of("abc","d","Query","f");
-        Optional<String> resultFindAny= firstQFindAny.filter(str->str.startsWith("Q")).findAny();
-        if(resultWord.isPresent()){
+        Stream<String> firstQFindAny = Stream.of("abc", "d", "Query", "f");
+        Optional<String> resultFindAny = firstQFindAny.filter(str -> str.startsWith("Q")).findAny();
+        if (resultWord.isPresent()) {
             System.out.println(resultWord.get());
         }
 
         System.out.println("----------------------------------------");
-        Stream<String> firstQAnyMatch = Stream.of("abc","d","Query","f");
-        boolean resultAnyMatch= firstQAnyMatch.parallel().anyMatch(str->str.startsWith("Q"));
+        Stream<String> firstQAnyMatch = Stream.of("abc", "d", "Query", "f");
+        boolean resultAnyMatch = firstQAnyMatch.parallel().anyMatch(str -> str.startsWith("Q"));
         System.out.println(resultAnyMatch);
 
         System.out.println("----------------------------------------");
-        Stream<String> optional = Stream.of("abc","d","Query","f");
-        Optional<String> optionalFindFirst= optional.filter(str->str.startsWith("Q")).findFirst();
-        optionalFindFirst.ifPresent(n-> System.out.println(n.toLowerCase()));
+        Stream<String> optional = Stream.of("abc", "d", "Query", "f");
+        Optional<String> optionalFindFirst = optional.filter(str -> str.startsWith("Q")).findFirst();
+        optionalFindFirst.ifPresent(n -> System.out.println(n.toLowerCase()));
 
         System.out.println("----------------------------------------");
-        Stream<String> optionalMap = Stream.of("abc","d","Query","f");
-        Optional<String> mapFunc= optionalMap.filter(str->str.startsWith("Q")).findFirst();
-        Optional<Boolean> mapFuncResult = optionalFindFirst.map(n-> null != n);
+        Stream<String> optionalMap = Stream.of("abc", "d", "Query", "f");
+        Optional<String> mapFunc = optionalMap.filter(str -> str.startsWith("Q")).findFirst();
+        Optional<Boolean> mapFuncResult = optionalFindFirst.map(n -> null != n);
         System.out.println(mapFuncResult.get());
 
         System.out.println("----------------------------------------");
-        Stream<String> optionalOrElse = Stream.of("abc","d","Query","f");
-        Optional<String> resultOrElse= optionalOrElse.filter(str->str.startsWith("B")).findFirst();
+        Stream<String> optionalOrElse = Stream.of("abc", "d", "Query", "f");
+        Optional<String> resultOrElse = optionalOrElse.filter(str -> str.startsWith("Q")).findFirst();
         //没有值时输出默认值
         //System.out.println(resultOrElse.orElseGet(()->"Stream中不存在符合匹配条件的元素"));
         //没有值时抛出异常
-        resultOrElse.orElseThrow(()->new NoSuchElementException());
+        resultOrElse.orElseThrow(() -> new NoSuchElementException());
+
+        System.out.println("----------------------------------------");
+        Stream<Integer> reduceOne = Stream.of(1, 2, 3, 4, 5);
+        Optional<Integer> reduceOneResult = reduceOne.reduce((n, m) -> n + m);
+        System.out.println(reduceOneResult.orElseGet(() -> -1));
+
+        System.out.println("----------------------------------------");
+        Stream<Integer> reduceTwo = Stream.of(1, 2, 3, 4, 5);
+        Integer reduceTwoResult = reduceTwo.reduce(0, (n, m) -> n + m);
+        System.out.println(reduceTwoResult);
+
+        /*
+         *使用reduce()方法实现复杂的操作
+         */
+        System.out.println("----------------------------------------");
+        Stream<Integer> reduceTwo1 = Stream.of(1, 2, 3, 4, 5);
+        Integer reduceTwoResult1 = reduceTwo1.reduce(0, (n, m) -> {
+            if (m > 2) {
+                return n + m;
+            } else {
+                return n;
+            }
+        });
+        System.out.println(reduceTwoResult1);
 
 
+         /*
+         *收集器的使用
+         */
+        System.out.println("----------------------------------------");
+        Stream<Integer> collect1 = Stream.of(1, 2, 3, 4, 5);
+        List<Integer> toList = collect1.collect(Collectors.toList());
+        System.out.println(toList);
 
+        System.out.println("----------------------------------------");
+        Stream<Integer> set1 = Stream.of(1, 2, 3, 4, 5);
+        Set<Integer> toSet = set1.collect(Collectors.toSet());
+        System.out.println(toSet);
+
+        System.out.println("toCollection----------------------------------------");
+        Stream<Integer> toCollection = Stream.of(1, 2, 3, 4, 5);
+        TreeSet<Integer> toTreeSet = toCollection.collect(
+                Collectors.toCollection(() -> new TreeSet<Integer>()));
+        System.out.println(toTreeSet);
+
+        /*
+        *
+        * 最基本的方式
+        *
+        */
+//        Stream<Integer> myCollect = Stream.of(1, 2, 3);
+//        LinkedList<Integer> linkedList = myCollect.parallel().collect(
+//                () -> new LinkedList<>(),
+//                LinkedList<Integer>::new,
+//                (list, ele) -> list.add(ele),
+//                (list1, list2) -> list1.addAll(list2));
+//        System.out.println(linkedList);
+
+
+        /*
+         *不使用并行
+         */
+//        Stream<Integer> myCollect = Stream.of(1, 2, 3);
+//        LinkedList<Integer> linkedList = myCollect.collect(() -> new LinkedList<>(),
+//                (list, ele) -> {
+//                    list.add(ele);
+//                    System.out.println("list:" + list);
+//                },
+//                (list1, list2) -> {
+//                    list1.addAll(list2);
+//                    System.out.println("list1:" + list1);
+//                    System.out.println("list2:" + list2);
+//                });
+//        System.out.println(linkedList);
+
+        System.out.println("----------------------------------------");
+        /*
+        *使用并行
+        */
+        Stream<Integer> myCollect = Stream.of(1, 2, 3);
+        LinkedList<Integer> linkedList = myCollect.parallel().collect(() -> new LinkedList<>(),
+                (list, ele) -> {
+                    list.add(ele);
+                    System.out.println("list:" + list);
+                },
+                (list1, list2) -> {
+                    list1.addAll(list2);
+                    System.out.println("list1:" + list1);
+                    System.out.println("list2:" + list2);
+                });
+        System.out.println(linkedList);
+
+
+        System.out.println("----------------------------------------");
+        Stream<String> myJoining = Stream.of("1", "2", "3");
+        String resultJoining = myJoining.collect(Collectors.joining());
+        System.out.println(resultJoining);
+
+        System.out.println("----------------------------------------");
+        Stream<Integer> myJoining1 = Stream.of(1, 2, 3);
+        String resultJoining1 = myJoining1.map(obj -> obj.toString()).collect(Collectors.joining(","));
+        System.out.println(resultJoining1);
+
+        System.out.println("----------------------------------------");
+        Stream<Integer> summary = Stream.of(1, 2, 3);
+        IntSummaryStatistics summaryStatistics = summary.collect(Collectors.summarizingInt(n -> n));
+        System.out.println("平均值：" + summaryStatistics.getAverage());
+        System.out.println("数量：" + summaryStatistics.getCount());
+        System.out.println("最大值：" + summaryStatistics.getMax());
+        System.out.println("最大值：" + summaryStatistics.getMin());
+        System.out.println("总和：" + summaryStatistics.getSum());
+
+        System.out.println("toMap----------------------------------------");
+        Stream<Student> toMapDemo = Stream.of(new Student("A", 10), new Student("A", 12), new Student("B", 11), new Student("B", 12));
+//        Map<String,Student> toMapResult = toMapDemo.collect(Collectors.toMap(Student::getName,stu->stu));
+//        Map<String,Student> toMapResult = toMapDemo.collect(Collectors.toMap(Student::getName,Function.identity()));
+        Map<String, Set<Student>> toMapResult = toMapDemo.collect(Collectors.toMap(Student::getName,
+//                value -> {
+//                    Set<Student> temp = new HashSet<Student>();
+//                    temp.add(value);
+//                    return temp;
+//                },
+                value -> Collections.singleton(value),
+                (oldValue, newValue) -> {
+                    Set<Student> studentSet = new HashSet<Student>(oldValue);
+                    studentSet.addAll(newValue);
+                    return studentSet;
+                }, TreeMap::new));
+        System.out.println(toMapResult);
+
+        System.out.println("----------------------------------------");
+        Stream<Student> groupingByDemo = Stream.of(new Student("A", 10), new Student("A", 13), new Student("B", 11), new Student("B", 12));
+        Map<String, List<Student>> groupingByResult = groupingByDemo.collect(Collectors.groupingBy(stu -> stu.getName()));
+        System.out.println(groupingByResult);
+
+        System.out.println("----------------------------------------");
+        Stream<Student> groupingByDemo2 = Stream.of(new Student("A", 10), new Student("A", 13), new Student("B", 11));
+        Map<String, Set<Student>> groupingByResult2 = groupingByDemo2.collect(
+                Collectors.groupingBy(stu -> stu.getName(),
+                        Collectors.toSet()));
+        System.out.println(groupingByResult2);
+
+        System.out.println("----------------------------------------");
+        Stream<Student> mappingDemo = Stream.of(new Student("A", 10), new Student("A", 13), new Student("B", 11));
+        Map<String, List<Integer>> mappingDemoResult = mappingDemo.collect(
+                Collectors.groupingBy(stu -> stu.getName(), Collectors.mapping(Student::getAge, Collectors.toList())));
+        System.out.println(mappingDemoResult);
+
+        System.out.println("----------------------------------------");
+        Stream<Student> partitioningBy = Stream.of(new Student("A", 10), new Student("A", 13), new Student("B", 11));
+        Map<Boolean, List<Student>> partitioningByResult = partitioningBy.collect(
+                Collectors.partitioningBy(stu -> stu.getAge() >= 11));
+        System.out.println(partitioningByResult);
+
+        System.out.println("----------------------------------------");
+        Stream<Student> partitioningBy2 = Stream.of(new Student("A", 10), new Student("A", 13), new Student("B", 11));
+        Map<Boolean, Set<Student>> partitioningByResult2 = partitioningBy2.collect(
+                Collectors.partitioningBy(stu -> stu.getAge() >= 11, Collectors.toSet()));
+        System.out.println(partitioningByResult2);
+
+        System.out.println("----------------------------------------");
+        Stream<Student> countingDemo = Stream.of(new Student("A", 10), new Student("A", 13), new Student("B", 11));
+        Map<String, Long> countingResult = countingDemo.collect(Collectors.groupingBy(stu -> stu.getName(), Collectors.counting()));
+        System.out.println(countingResult);
+
+        System.out.println("----------------------------------------");
+        Stream<Student> summingDemo = Stream.of(new Student("A", 10), new Student("A", 13), new Student("B", 11));
+        Map<String, Integer> summingResult = summingDemo.collect(Collectors.groupingBy(stu -> stu.getName(),
+                Collectors.summingInt(stu -> stu.getAge())));
+        System.out.println(summingResult);
+
+        System.out.println("----------------------------------------");
+        Stream<Student> maxByDemo = Stream.of(new Student("A", 10), new Student("A", 13), new Student("B", 11), new Student("B", 9));
+        Map<String, Optional<Student>> maxByResult = maxByDemo.collect(Collectors.groupingBy(Student::getName,
+                Collectors.maxBy(Comparator.comparing(Student::getAge))));
+        System.out.println(maxByResult);
+
+        System.out.println("----------------------------------------");
+        Stream<Student> summaryDemo = Stream.of(new Student("A", 10), new Student("A", 13), new Student("B", 11), new Student("B", 9));
+        Map<String, IntSummaryStatistics> summaryResult = summaryDemo.collect(Collectors.groupingBy(Student::getName,
+               Collectors.summarizingInt(Student::getAge)));
+        System.out.println(summaryResult);
+
+        System.out.println("----------------------------------------");
+        Stream<Student> reducingDemo = Stream.of(new Student("A", 10), new Student("A", 13), new Student("B", 11));
+        Map<String, Integer> reducingResult = reducingDemo.collect(Collectors.groupingBy(Student::getName,
+                Collectors.reducing(0,Student::getAge,(stuA,stuB)->stuA+stuB)));
+        System.out.println(reducingResult);
+
+        System.out.println("----------------------------------------");
+        IntStream intStream = IntStream.of(1,2,3,4);
+        intStream.forEach(i-> System.out.println(i));
+
+
+        System.out.println("----------------------------------------");
+        int[] arrayInt = new int[]{1,34,5};
+        IntStream intStream2 = Arrays.stream(arrayInt,0,arrayInt.length);
+        intStream2.forEach(i-> System.out.println(i));
+
+
+        System.out.println("----------------------------------------");
+        IntStream zeroToNinetyNine = IntStream.range(0,100);//不包括上限
+        zeroToNinetyNine.forEach(i-> System.out.println(i));
+
+
+        System.out.println("----------------------------------------");
+        IntStream zeroToHundred = IntStream.rangeClosed(0,100);//包括上限
+        zeroToHundred.forEach(i-> System.out.println(i));
+
+        System.out.println("----------------------------------------");K
+
+
+//        LinkedList<Integer> linkedList1 = myCollect.collect(
+//                LinkedList<Integer>::new,
+//                LinkedList::add,
+//                LinkedList::addAll);
 
 
 //        List<String> result = longwords.collect(Collectors.toList());
