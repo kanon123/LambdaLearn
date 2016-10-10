@@ -63,6 +63,20 @@ public class StreamLearn {
         Stream<String> mapStream = mapDemo.stream().map((str) -> str.toUpperCase());
         mapStream.forEach((System.out::println));
 
+
+        System.out.println("mapStream1----------------------------------------");
+
+        Stream<Student> mapStream1 = Stream.of(new Student("A", 10), new Student("A", 13), new Student("B", 11), new Student("B", 12));
+        Stream<String> map1Result = mapStream1.map((str) -> str.getName());
+        map1Result.forEach((System.out::println));
+
+        System.out.println("mapStream2----------------------------------------");
+
+        Stream<Student> mapStream2 = Stream.of(new Student("A", 10), new Student("A", 13), new Student("B", 11), new Student("B", 12));
+        IntStream map2Result = mapStream2.mapToInt((str) -> str.getAge());
+        map2Result.forEach((System.out::println));
+
+
         System.out.println("----------------------------------------");
         List<String> sortedDemo = new ArrayList<>();
         sortedDemo.add("b");
@@ -80,10 +94,18 @@ public class StreamLearn {
         List<Integer> listB = new ArrayList<>();
         listB.add(3);
         listB.add(4);
+        Stream<Stream<Integer>> aaa =Stream.of(listA, listB).map(n->{
+            System.out.println("aaa");
+            return n.stream();
+        });
+        aaa.forEach(System.out::println);
         //注释的部分输出[1,2] [3,4]并不是将两个List合并为一个Stream
         //Stream<List<Integer>> flatMap = Stream.of(listA, listB);
         //flatMap.forEach(System.out::println);
-        Stream<Integer> flatMap = Stream.of(listA, listB).flatMap(num -> num.stream());
+        Stream<Integer> flatMap = Stream.of(listA, listB).flatMap(num -> {
+            System.out.println();
+            return num.stream();
+        });
         flatMap.forEach((num) -> System.out.print(" " + num));
 
         System.out.println();
@@ -350,36 +372,57 @@ public class StreamLearn {
         System.out.println("----------------------------------------");
         Stream<Student> summaryDemo = Stream.of(new Student("A", 10), new Student("A", 13), new Student("B", 11), new Student("B", 9));
         Map<String, IntSummaryStatistics> summaryResult = summaryDemo.collect(Collectors.groupingBy(Student::getName,
-               Collectors.summarizingInt(Student::getAge)));
+                Collectors.summarizingInt(Student::getAge)));
         System.out.println(summaryResult);
 
         System.out.println("----------------------------------------");
         Stream<Student> reducingDemo = Stream.of(new Student("A", 10), new Student("A", 13), new Student("B", 11));
         Map<String, Integer> reducingResult = reducingDemo.collect(Collectors.groupingBy(Student::getName,
-                Collectors.reducing(0,Student::getAge,(stuA,stuB)->stuA+stuB)));
+                Collectors.reducing(0, Student::getAge, (stuA, stuB) -> stuA + stuB)));
         System.out.println(reducingResult);
 
         System.out.println("----------------------------------------");
-        IntStream intStream = IntStream.of(1,2,3,4);
-        intStream.forEach(i-> System.out.println(i));
+        IntStream intStream = IntStream.of(1, 2, 3, 4);
+        intStream.forEach(i -> System.out.println(i));
 
 
         System.out.println("----------------------------------------");
-        int[] arrayInt = new int[]{1,34,5};
-        IntStream intStream2 = Arrays.stream(arrayInt,0,arrayInt.length);
-        intStream2.forEach(i-> System.out.println(i));
+        int[] arrayInt = new int[]{1, 34, 5};
+        IntStream intStream2 = Arrays.stream(arrayInt, 0, arrayInt.length);
+        intStream2.forEach(i -> System.out.println(i));
 
 
         System.out.println("----------------------------------------");
-        IntStream zeroToNinetyNine = IntStream.range(0,100);//不包括上限
-        zeroToNinetyNine.forEach(i-> System.out.println(i));
+        IntStream zeroToNinetyNine = IntStream.range(0, 100);//不包括上限
+        zeroToNinetyNine.forEach(i -> System.out.println(i));
 
 
         System.out.println("----------------------------------------");
-        IntStream zeroToHundred = IntStream.rangeClosed(0,100);//包括上限
-        zeroToHundred.forEach(i-> System.out.println(i));
+        IntStream zeroToHundred = IntStream.rangeClosed(0, 100);//包括上限
+        zeroToHundred.forEach(i -> System.out.println(i));
 
-        System.out.println("----------------------------------------");K
+        System.out.println("----------------------------------------");
+        Stream<Integer> integerStream = Stream.of(1, 2, 3, 4);
+        IntStream mapToIntDemo = integerStream.mapToInt(n -> n.intValue());
+        mapToIntDemo.forEach(i -> System.out.println(i));
+
+
+        System.out.println("----------------------------------------");
+        Stream<Integer> integers = IntStream.range(2, 10).boxed();
+        integers.forEach(System.out::println);
+
+
+        System.out.println("strStream----------------------------------------");
+        Stream<String> strStream =Stream.of("A","b","cc","v","dd","A","b","cc","v","dd","A","b","cc","v","dd");
+        int[] shortWord = new int[3];
+        strStream.parallel().forEach(s->{
+            if(s.length()<3)
+                shortWord[s.length()]++;
+        });
+        for(int i =0 ;i<shortWord.length;i++){
+            System.out.println(shortWord[i]);
+        }
+
 
 
 //        LinkedList<Integer> linkedList1 = myCollect.collect(
