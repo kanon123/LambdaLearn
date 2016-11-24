@@ -48,6 +48,7 @@ public class IOTest {
             System.out.println(file.isFile());
             System.out.println(file.exists());
             file.renameTo(new File("f:/file1.txt"));
+	    System.out.println("add");
         } catch (IOException e) {
             e.printStackTrace();
         }
